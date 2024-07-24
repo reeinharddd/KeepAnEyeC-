@@ -55,36 +55,48 @@ namespace KeepAnEye.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel loginModel)
         {
+            // Busca al usuario en la base de datos por correo electrónico
             var user = _mongoDbService.GetUsers()
                                        .FirstOrDefault(u => u.Email == loginModel.Email);
 
+            // Verifica si el usuario existe
             if (user == null)
             {
-                return NotFound("User not found.");
+                return Unauthorized("Credenciales incorrectas.");
             }
 
-            if (!BCrypt.Net.BCrypt.Verify(loginModel.Password, user.Password))
+            // Verifica si la contraseña proporcionada coincide con la almacenada
+            if (loginModel.Password != user.Password) // Aquí puedes usar un método de comparación diferente si es necesario
             {
-                return Unauthorized("Invalid credentials.");
+                return Unauthorized("Credenciales incorrectas.");
             }
 
+            // Genera un token JWT
             var token = GenerateJwtToken(user);
             return Ok(new { Token = token });
         }
+
 
         [HttpGet("profile")]
         [Authorize]
         public IActionResult Profile()
         {
+            // Obtiene el ID del usuario del token JWT
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Busca el usuario en la base de datos
             var user = _mongoDbService.GetUser(userId);
+
+            // Verifica si el usuario existe
             if (user == null)
             {
                 return NotFound("Usuario no encontrado");
             }
 
+            // Devuelve el perfil del usuario
             return Ok(user);
         }
+
 
         [HttpGet("{id}")]
         public ActionResult<User> GetUser(string id)
@@ -100,13 +112,19 @@ namespace KeepAnEye.Controllers
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]); // Asegúrate de que la clave tenga al menos 32 bytes
+
+            if (key.Length < 32) // Verifica que la clave tenga al menos 32 bytes
+            {
+                throw new Exception("La clave de firma JWT debe tener al menos 32 bytes.");
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Email, user.Email)
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Email, user.Email)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -115,6 +133,7 @@ namespace KeepAnEye.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
 
         public class LoginModel
         {
