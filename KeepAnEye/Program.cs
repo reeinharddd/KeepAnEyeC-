@@ -36,6 +36,8 @@ builder.Services.AddSingleton<UserService>();
 // Add Metrics service
 builder.Services.AddSingleton<MetricsService>();
 
+builder.Services.AddSingleton<MedicalInfoService>();
+
 // Add JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
