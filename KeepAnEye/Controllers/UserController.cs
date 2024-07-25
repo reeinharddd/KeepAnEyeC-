@@ -1,3 +1,4 @@
+// Controllers/UserController.cs
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -7,7 +8,6 @@ using BCrypt.Net;
 using KeepAnEye.Models;
 using KeepAnEye.Services;
 using Microsoft.AspNetCore.Authorization;
-using MongoDB.Bson;
 
 namespace KeepAnEye.Controllers
 {
@@ -15,12 +15,12 @@ namespace KeepAnEye.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly MongoDbService _mongoDbService;
+        private readonly UserService _userService;
         private readonly IConfiguration _configuration;
 
-        public UserController(MongoDbService mongoDbService, IConfiguration configuration)
+        public UserController(UserService userService, IConfiguration configuration)
         {
-            _mongoDbService = mongoDbService;
+            _userService = userService;
             _configuration = configuration;
         }
 
@@ -33,67 +33,46 @@ namespace KeepAnEye.Controllers
         [HttpPost("register")]
         public IActionResult Register([FromBody] User user)
         {
-            // Log de datos recibidos
-            Console.WriteLine("Subscription ID: " + user.Subscription);
-            foreach (var patient in user.Patients)
-            {
-                Console.WriteLine("Patient ID: " + patient.PatientId);
-                Console.WriteLine("Relationship: " + patient.Relationship);
-            }
-
-            // Validaciones
-
-
-
-
-            _mongoDbService.CreateUser(user);
+            _userService.CreateUser(user);
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
-
-
 
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel loginModel)
         {
-            // Busca al usuario en la base de datos por correo electrónico
-            var user = _mongoDbService.GetUsers()
-                                       .FirstOrDefault(u => u.Email == loginModel.Email);
+            var user = _userService.GetUsers()
+                                   .FirstOrDefault(u => u.Email == loginModel.Email);
 
-            // Verifica si el usuario existe
             if (user == null)
             {
                 return Unauthorized("Credenciales incorrectas.");
             }
 
-            // Verifica si la contraseña proporcionada coincide con la almacenada
             if (loginModel.Password != user.Password) // Aquí puedes usar un método de comparación diferente si es necesario
             {
                 return Unauthorized("Credenciales incorrectas.");
             }
 
-            // Genera un token JWT
             var token = GenerateJwtToken(user);
             return Ok(new { Token = token });
         }
 
-
         [HttpGet("profile")]
         [Authorize]
-        public IActionResult Profile()
+        public IActionResult GetProfile()
         {
-            // Obtiene el ID del usuario del token JWT
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Busca el usuario en la base de datos
-            var user = _mongoDbService.GetUser(userId);
-
-            // Verifica si el usuario existe
-            if (user == null)
+            var userId = User.FindFirst("id")?.Value;
+            if (userId == null)
             {
-                return NotFound("Usuario no encontrado");
+                return Unauthorized();
             }
 
-            // Devuelve el perfil del usuario
+            var user = _userService.GetUser(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
             return Ok(user);
         }
 
@@ -101,7 +80,7 @@ namespace KeepAnEye.Controllers
         [HttpGet("{id}")]
         public ActionResult<User> GetUser(string id)
         {
-            var user = _mongoDbService.GetUser(id);
+            var user = _userService.GetUser(id);
             if (user == null)
             {
                 return NotFound();
@@ -109,30 +88,56 @@ namespace KeepAnEye.Controllers
             return Ok(user);
         }
 
-        private string GenerateJwtToken(User user)
+        [HttpPut("{id}")]
+        public IActionResult UpdateUser(string id, [FromBody] User userIn)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]); // Asegúrate de que la clave tenga al menos 32 bytes
-
-            if (key.Length < 32) // Verifica que la clave tenga al menos 32 bytes
+            var user = _userService.GetUser(id);
+            if (user == null)
             {
-                throw new Exception("La clave de firma JWT debe tener al menos 32 bytes.");
+                return NotFound();
             }
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email)
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            _userService.UpdateUser(id, userIn);
+            return NoContent();
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteUser(string id)
+        {
+            var user = _userService.GetUser(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            _userService.DeleteUser(id);
+            return NoContent();
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var claims = new[]
+            {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Name.FirstName),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+        new Claim("id", user.Id)
+    };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "default_secret_key"));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(3),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+
 
 
         public class LoginModel

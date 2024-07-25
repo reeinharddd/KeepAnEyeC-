@@ -26,6 +26,9 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 // Add MongoDB service
 builder.Services.AddSingleton<MongoDbService>();
 
+// Add User service
+builder.Services.AddSingleton<UserService>();
+
 // Add JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
