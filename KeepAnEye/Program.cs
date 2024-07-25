@@ -15,11 +15,14 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("http://localhost") // Permitir solicitudes desde este origen
-                  .AllowAnyMethod()                // Permitir cualquier método (GET, POST, etc.)
-                  .AllowAnyHeader();               // Permitir cualquier header
+            policy.WithOrigins("http://localhost")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials(); // Permitir el envío de credenciales
         });
 });
+
+
 
 // Add MongoDB settings configuration
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
@@ -50,7 +53,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // Add SignalR
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+    options.KeepAliveInterval = TimeSpan.FromSeconds(10); // Ajusta según sea necesario
+});
+
+
 
 var app = builder.Build();
 
@@ -71,6 +80,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Map SignalR hubs
-app.MapHub<LocationHub>("/locationHub");
+app.MapHub<MetricsHub>("/metricsHub");
 
 app.Run();

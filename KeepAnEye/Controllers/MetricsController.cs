@@ -36,11 +36,10 @@ namespace KeepAnEye.Controllers
                 return NotFound("Metric not found");
             }
 
-            // Aquí puedes emitir el evento a través de SignalR si deseas enviar notificaciones en tiempo real
-            // Ejemplo: _hubContext.Clients.All.SendAsync("locationUpdate", metric.Location);
-
+            // Emitir el evento de actualización a través de SignalR
             return Ok(metric.Location);
         }
+
         [HttpGet("all/{patientId}")]
         public async Task<IActionResult> GetAllMetricsByPatientId(string patientId)
         {
@@ -49,6 +48,8 @@ namespace KeepAnEye.Controllers
             {
                 return NotFound("No metrics found for the specified patient.");
             }
+
+            // Emitir el evento de actualización a través de SignalR
             return Ok(metrics);
         }
     }
