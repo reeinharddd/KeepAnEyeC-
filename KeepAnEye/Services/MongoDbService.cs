@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿// Services/MongoDbService.cs
+using MongoDB.Driver;
 using KeepAnEye.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
@@ -40,18 +41,18 @@ namespace KeepAnEye.Services
             return _usersCollection.Find(user => true).ToList();
         }
 
-        public User GetUser(ObjectId id)
+        public User GetUser(string id)
         {
             return _usersCollection.Find(user => user.Id == id).FirstOrDefault();
         }
 
-        public void UpdateUser(ObjectId id, UpdateDefinition<User> updateDefinition)
+        public void UpdateUser(string id, UpdateDefinition<User> updateDefinition)
         {
             var filter = Builders<User>.Filter.Eq(user => user.Id, id);
             _usersCollection.UpdateOne(filter, updateDefinition);
         }
 
-        public void DeleteUser(ObjectId id)
+        public void DeleteUser(string id)
         {
             _usersCollection.DeleteOne(user => user.Id == id);
         }

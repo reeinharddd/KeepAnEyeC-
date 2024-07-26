@@ -44,7 +44,7 @@ namespace KeepAnEye.Controllers
                 return BadRequest("Invalid ID format.");
             }
 
-            var patient = _mongoDbService.GetUser(objectId);
+            var patient = _mongoDbService.GetUser(id);
             if (patient == null || patient.UserType != "patient")
             {
                 return NotFound();
