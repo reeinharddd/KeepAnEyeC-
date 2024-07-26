@@ -1,13 +1,10 @@
-using KeepAnEye.Models.Abstract;
-using MongoDB.Bson;
+﻿using KeepAnEye.Models.Abstract;
 using MongoDB.Bson.Serialization.Attributes;
-using System;
-using System.Collections.Generic;
+using MongoDB.Bson;
 
 namespace KeepAnEye.Models
 {
-    [BsonIgnoreExtraElements]
-    public class User
+    public class Patient
     {
         [BsonId]
         public ObjectId Id { get; set; }
@@ -43,32 +40,6 @@ namespace KeepAnEye.Models
 
         [BsonElement("status")]
         public string Status { get; set; } = null;
-
-        [BsonElement("subscription")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId? Subscription { get; set; }
-
-
-        [BsonElement("patients")]
-        public List<Patients> Patients { get; set; } = new List<Patients>();
     }
 
-    public class Name
-    {
-        [BsonElement("first_name")]
-        public string FirstName { get; set; } = string.Empty;
-
-        [BsonElement("last_name")]
-        public string LastName { get; set; } = string.Empty;
-    }
-
-    public class Patients
-    {
-        [BsonElement("patient_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId? PatientId { get; set; }
-
-        [BsonElement("relationship")]
-       public string?Relationship { get; set; } = null;
-    }
 }
