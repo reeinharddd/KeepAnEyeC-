@@ -15,17 +15,28 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("http://localhost") // Permitir solicitudes desde este origen
-                  .AllowAnyMethod()                // Permitir cualquier método (GET, POST, etc.)
-                  .AllowAnyHeader();               // Permitir cualquier header
+            policy.WithOrigins("http://localhost")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials(); // Permitir el envío de credenciales
         });
 });
+
+
 
 // Add MongoDB settings configuration
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
 
 // Add MongoDB service
 builder.Services.AddSingleton<MongoDbService>();
+
+// Add User service
+builder.Services.AddSingleton<UserService>();
+
+// Add Metrics service
+builder.Services.AddSingleton<MetricsService>();
+
+builder.Services.AddSingleton<MedicalInfoService>();
 
 // Add JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -92,5 +103,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Map SignalR hubs
+app.MapHub<MetricsHub>("/metricsHub");
 
 app.Run();

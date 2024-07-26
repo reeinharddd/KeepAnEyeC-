@@ -7,12 +7,11 @@ using System.Collections.Generic;
 namespace KeepAnEye.Models
 {
     [BsonIgnoreExtraElements]
-    public class MedicalInfo 
+    public class MedicalInfo
     {
         public ObjectId Id { get; set; }
 
         [BsonElement("patient_id")]
-        public ObjectId PatientId { get; set; }
 
         [BsonElement("health_info")]
         public HealthInfo HealthInfo { get; set; }
@@ -42,7 +41,6 @@ namespace KeepAnEye.Models
         public List<Medicine> Medicines { get; set; }
 
         [BsonElement("allergies")]
-        public List<Allergy> Allergies { get; set; }
 
         [BsonElement("medical_conditions")]
         public List<MedicalCondition> MedicalConditions { get; set; }
@@ -102,11 +100,16 @@ namespace KeepAnEye.Models
         public string Phone { get; set; }
 
         [BsonElement("address")]
-        public Address Address { get; set; }
     }
 
     public class MedicalDocument
     {
+        [BsonElement("_id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
+        [BsonElement("mimeType")]
+        public string MimeType { get; set; }
+
         [BsonElement("name")]
         public string Name { get; set; }
 
@@ -116,7 +119,5 @@ namespace KeepAnEye.Models
         [BsonElement("date")]
         public DateTime Date { get; set; }
 
-        [BsonElement("url")]
-        public string Url { get; set; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using MongoDB.Driver;
-using KeepAnEye.Models;
+﻿// Services/MongoDbService.cs
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using System.Collections.Generic;

@@ -1,3 +1,4 @@
+// Controllers/UserController.cs
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,12 +18,12 @@ namespace KeepAnEye.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly MongoDbService _mongoDbService;
+        private readonly UserService _userService;
         private readonly IConfiguration _configuration;
 
-        public UserController(MongoDbService mongoDbService, IConfiguration configuration)
+        public UserController(UserService userService, IConfiguration configuration)
         {
-            _mongoDbService = mongoDbService;
+            _userService = userService;
             _configuration = configuration;
         }
 
@@ -91,28 +92,28 @@ namespace KeepAnEye.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel loginModel)
         {
-            // Busca al usuario en la base de datos por correo electrónico
-            var user = _mongoDbService.GetUsers()
-                                       .FirstOrDefault(u => u.Email == loginModel.Email);
+            var user = _userService.GetUsers()
+                                   .FirstOrDefault(u => u.Email == loginModel.Email);
 
-            // Verifica si el usuario existe
             if (user == null)
             {
                 return Unauthorized("Credenciales incorrectas.");
             }
 
 
-            // Genera un token JWT
             var token = GenerateJwtToken(user);
             return Ok(new { Token = token, UserId = user.Id.ToString() });
         }
 
         [HttpGet("profile")]
         [Authorize]
-        public IActionResult Profile()
+        public IActionResult GetProfile()
         {
-            // Obtiene el ID del usuario del token JWT
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirst("id")?.Value;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
 
             // Convierte el ID del usuario de string a ObjectId
             if (!ObjectId.TryParse(userId, out var objectId))
@@ -126,10 +127,9 @@ namespace KeepAnEye.Controllers
             // Verifica si el usuario existe
             if (user == null)
             {
-                return NotFound("Usuario no encontrado");
+                return NotFound();
             }
 
-            // Devuelve el perfil del usuario
             return Ok(user);
         }
 
@@ -191,10 +191,18 @@ namespace KeepAnEye.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]); // Asegúrate de que la clave tenga al menos 32 bytes
 
-            if (key.Length < 32) // Verifica que la clave tenga al menos 32 bytes
+        [HttpDelete("{id}")]
+        public IActionResult DeleteUser(string id)
+        {
+            var user = _userService.GetUser(id);
+            if (user == null)
             {
-                throw new Exception("La clave de firma JWT debe tener al menos 32 bytes.");
+                return NotFound();
             }
+
+            _userService.DeleteUser(id);
+            return NoContent();
+        }
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -207,9 +215,19 @@ namespace KeepAnEye.Controllers
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "default_secret_key"));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(3),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
 
         public class LoginModel
         {
