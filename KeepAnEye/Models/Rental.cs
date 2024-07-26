@@ -6,7 +6,8 @@ namespace KeepAnEye.Models
     [BsonIgnoreExtraElements]
     public class Rental
     {
-        public ObjectId Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
 
         [BsonElement("user_id"), BsonRepresentation(BsonType.ObjectId)]
         public string PatientId { get; set; }

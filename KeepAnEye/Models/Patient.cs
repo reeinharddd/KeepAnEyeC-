@@ -7,7 +7,7 @@ namespace KeepAnEye.Models
     public class Patient
     {
         [BsonId]
-        public ObjectId Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
         [BsonElement("name")]
         public Name Name { get; set; } = new Name();
 

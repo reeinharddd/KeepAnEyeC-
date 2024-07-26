@@ -44,7 +44,7 @@ namespace KeepAnEye.Controllers
                 return BadRequest("Invalid ID format.");
             }
 
-            var patient = _mongoDbService.GetUser(objectId);
+            var patient = _mongoDbService.GetUser(id);
             if (patient == null || patient.UserType != "patient")
             {
                 return NotFound();
@@ -112,7 +112,7 @@ namespace KeepAnEye.Controllers
                     return BadRequest("Invalid patient ID format.");
                 }
 
-                medicalInfo.PatientId = objectId; // Asignar el ID del paciente a MedicalInfo
+                medicalInfo.PatientId = patientId; // Asignar el ID del paciente a MedicalInfo
 
                 _mongoDbService.CreateMedicalInfo(medicalInfo);
                 return CreatedAtAction(nameof(GetMedicalInfo), new { patientId = medicalInfo.PatientId }, medicalInfo);
@@ -136,7 +136,7 @@ namespace KeepAnEye.Controllers
                     return BadRequest("Invalid patient ID format.");
                 }
 
-                var medicalInfo = _mongoDbService.GetMedicalInfoByPatientId(objectId);
+                var medicalInfo = _mongoDbService.GetMedicalInfoByPatientId(patientId);
                 if (medicalInfo == null)
                 {
                     return NotFound();

@@ -1,4 +1,6 @@
 ﻿// Services/MongoDbService.cs
+using MongoDB.Driver;
+using KeepAnEye.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using System.Collections.Generic;
@@ -39,18 +41,18 @@ namespace KeepAnEye.Services
             return _usersCollection.Find(user => true).ToList();
         }
 
-        public User GetUser(ObjectId id)
+        public User GetUser(string id)
         {
             return _usersCollection.Find(user => user.Id == id).FirstOrDefault();
         }
 
-        public void UpdateUser(ObjectId id, UpdateDefinition<User> updateDefinition)
+        public void UpdateUser(string id, UpdateDefinition<User> updateDefinition)
         {
             var filter = Builders<User>.Filter.Eq(user => user.Id, id);
             _usersCollection.UpdateOne(filter, updateDefinition);
         }
 
-        public void DeleteUser(ObjectId id)
+        public void DeleteUser(string id)
         {
             _usersCollection.DeleteOne(user => user.Id == id);
         }
@@ -88,7 +90,7 @@ namespace KeepAnEye.Services
             _medicalInfoCollection.InsertOne(medicalInfo);
         }
 
-        public MedicalInfo GetMedicalInfoByPatientId(ObjectId patientId)
+        public MedicalInfo GetMedicalInfoByPatientId(string patientId)
         {
             return _medicalInfoCollection
                 .Find(mi => mi.PatientId == patientId) // Consulta usando ObjectId
@@ -96,7 +98,7 @@ namespace KeepAnEye.Services
         }
 
 
-        public void UpdateMedicalInfoByPatientId(ObjectId patientId, MedicalInfo updatedMedicalInfo)
+        public void UpdateMedicalInfoByPatientId(string patientId, MedicalInfo updatedMedicalInfo)
         {
             var filter = Builders<MedicalInfo>.Filter.Eq(mi => mi.PatientId, patientId);
             var updateDefinition = Builders<MedicalInfo>.Update

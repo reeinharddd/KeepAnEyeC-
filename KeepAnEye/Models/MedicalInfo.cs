@@ -9,9 +9,11 @@ namespace KeepAnEye.Models
     [BsonIgnoreExtraElements]
     public class MedicalInfo
     {
-        public ObjectId Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
 
         [BsonElement("patient_id")]
+        public string PatientId { get; set; }
 
         [BsonElement("health_info")]
         public HealthInfo HealthInfo { get; set; }
@@ -41,6 +43,7 @@ namespace KeepAnEye.Models
         public List<Medicine> Medicines { get; set; }
 
         [BsonElement("allergies")]
+        public List<Allergy> Allergies { get; set; }
 
         [BsonElement("medical_conditions")]
         public List<MedicalCondition> MedicalConditions { get; set; }
@@ -100,6 +103,7 @@ namespace KeepAnEye.Models
         public string Phone { get; set; }
 
         [BsonElement("address")]
+        public Address Address { get; set; } = new Address();
     }
 
     public class MedicalDocument
