@@ -2,16 +2,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using KeepAnEye.Services;
-using Microsoft.OpenApi.Models; // Asegúrate de tener esta referencia
+using KeepAnEye.Hubs;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddScoped<UserService>(); // Registrar UserService aquí
-builder.Services.AddScoped<MongoDbService>();
-
-// Define CORS policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -24,8 +21,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-
-
 // Add MongoDB settings configuration
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
 
@@ -35,10 +30,14 @@ builder.Services.AddSingleton<MongoDbService>();
 // Add User service
 builder.Services.AddSingleton<UserService>();
 
+// Add MedicalInfo service
+builder.Services.AddSingleton<MedicalInfoService>();
+
+// Add SignalR
+builder.Services.AddSignalR();
+
 // Add Metrics service
 builder.Services.AddSingleton<MetricsService>();
-
-builder.Services.AddSingleton<MedicalInfoService>();
 
 // Add JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -60,7 +59,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "KeepAnEye API", Version = "v1" });
-    // Configura autenticación JWT en Swagger si es necesario
     var securitySchema = new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -75,14 +73,11 @@ builder.Services.AddSwaggerGen(c =>
             Id = "Bearer"
         }
     };
-
     c.AddSecurityDefinition("Bearer", securitySchema);
-
     var securityRequirement = new OpenApiSecurityRequirement
     {
         { securitySchema, new[] { "Bearer" } }
     };
-
     c.AddSecurityRequirement(securityRequirement);
 });
 
@@ -97,15 +92,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-
-// Enable CORS with the defined policy
 app.UseCors("AllowSpecificOrigin");
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-
+app.MapHub<MetricsHub>("/metricsHub");
 
 app.Run();
