@@ -13,7 +13,7 @@ namespace KeepAnEye.Models
         public string PatientId { get; set; }
 
         [BsonElement("start_date")]
-        public DateTime StartDate { get; set; }
+        public DateTime StartDate { get; set; } = DateTime.UtcNow;
 
         [BsonElement("end_date")]
         public DateTime EndDate { get; set; }
@@ -25,7 +25,7 @@ namespace KeepAnEye.Models
         public string PaymentId { get; set; }
 
         [BsonElement("payment_date")]
-        public DateTime PaymentDate {  get; set; }
+        public DateTime PaymentDate {  get; set; } = DateTime.UtcNow;
 
         [BsonElement("status")]
         public string Status { get; set; } = null;

@@ -4,27 +4,20 @@ using System.Text;
 using KeepAnEye.Services;
 using KeepAnEye.Hubs;
 using Microsoft.OpenApi.Models;
-using KeepAnEye.Models; // Asegúrate de tener esta referencia
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddScoped<UserService>(); // Registrar UserService aquí
-builder.Services.AddScoped<MetricsService>();
-builder.Services.AddScoped<MedicalInfoService>();
-builder.Services.AddScoped<EmergencyContactsService>();
-builder.Services.AddScoped<MongoDbService>();
-
-// Define CORS policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("http://localhost") // Permitir solicitudes desde este origen
-                  .AllowAnyMethod()                // Permitir cualquier método (GET, POST, etc.)
-                  .AllowAnyHeader();               // Permitir cualquier header
+            policy.WithOrigins("http://localhost")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials(); // Permitir el envío de credenciales
         });
 });
 
@@ -34,8 +27,30 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 // Add MongoDB service
 builder.Services.AddSingleton<MongoDbService>();
 
+// Add User service
+builder.Services.AddSingleton<UserService>();
+
+// Add MedicalInfo service
+builder.Services.AddSingleton<MedicalInfoService>();
+
+//Add EmergencyContactas service
+builder.Services.AddSingleton<EmergencyContactsService>();
+
+//Add Rental service
+builder.Services.AddSingleton<RentalService>();
+
+//Add UpdateRental service
+builder.Services.AddHostedService<RentalStatusUpdateService>();
+
+//Add Payments service
+builder.Services.AddSingleton<PaymentService>();
+
+
 // Add SignalR
 builder.Services.AddSignalR();
+
+// Add Metrics service
+builder.Services.AddSingleton<MetricsService>();
 
 // Add JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -57,7 +72,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "KeepAnEye API", Version = "v1" });
-    // Configura autenticación JWT en Swagger si es necesario
     var securitySchema = new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -72,14 +86,11 @@ builder.Services.AddSwaggerGen(c =>
             Id = "Bearer"
         }
     };
-
     c.AddSecurityDefinition("Bearer", securitySchema);
-
     var securityRequirement = new OpenApiSecurityRequirement
     {
         { securitySchema, new[] { "Bearer" } }
     };
-
     c.AddSecurityRequirement(securityRequirement);
 });
 
@@ -94,16 +105,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-
-// Enable CORS with the defined policy
 app.UseCors("AllowSpecificOrigin");
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Map SignalR hubs
 app.MapHub<MetricsHub>("/metricsHub");
 
 app.Run();
