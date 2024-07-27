@@ -64,16 +64,16 @@ namespace KeepAnEye.Models
     public class Allergy
     {
         [BsonElement("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [BsonElement("severity")]
-        public string Severity { get; set; }
+        public string? Severity { get; set; }
 
         [BsonElement("reaction")]
-        public string Reaction { get; set; }
+        public string? Reaction { get; set; }
 
         [BsonElement("treatment")]
-        public string Treatment { get; set; }
+        public string? Treatment { get; set; }
     }
 
     public class MedicalCondition
@@ -103,25 +103,29 @@ namespace KeepAnEye.Models
         public string Phone { get; set; }
 
         [BsonElement("address")]
-        public Address Address { get; set; } = new Address();
+        public Address Address { get; set; }
+
+
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
     }
 
     public class MedicalDocument
     {
-        [BsonElement("_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+
         [BsonElement("mimeType")]
-        public string MimeType { get; set; }
+        public string Type { get; set; }
 
         [BsonElement("name")]
         public string Name { get; set; }
 
-        [BsonElement("type")]
-        public string Type { get; set; }
-
         [BsonElement("date")]
         public DateTime Date { get; set; }
 
+        [BsonElement("uri")]
+        public string Url { get; set; }
+
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
     }
 }

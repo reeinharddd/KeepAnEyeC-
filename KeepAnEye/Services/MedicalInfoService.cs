@@ -1,6 +1,7 @@
 // Services/MedicalInfoService.cs
 using KeepAnEye.Models;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace KeepAnEye.Services
@@ -19,11 +20,19 @@ namespace KeepAnEye.Services
 
         public async Task<MedicalInfo?> GetMedicalInfoByPatientIdAsync(string patientId)
         {
+
+
             return await _medicalInfos.Find(medicalInfo => medicalInfo.PatientId == patientId).FirstOrDefaultAsync();
         }
 
+
         public async Task<List<MedicalDocument>> GetDocumentsAsync(string userId)
         {
+            if (!ObjectId.TryParse(userId, out var objectId))
+            {
+                return new List<MedicalDocument>(); // O maneja el error según tu lógica de negocio
+            }
+
             var medicalInfo = await _medicalInfos.Find(medicalInfo => medicalInfo.PatientId == userId).FirstOrDefaultAsync();
             if (medicalInfo != null)
             {
@@ -31,5 +40,25 @@ namespace KeepAnEye.Services
             }
             return new List<MedicalDocument>();
         }
+
+        // Método para crear nueva información médica
+        public async Task CreateMedicalInfoAsync(MedicalInfo medicalInfo)
+        {
+            await _medicalInfos.InsertOneAsync(medicalInfo);
+        }
+
+        public async Task<UpdateResult> UpdateMedicalInfoAsync(string patientId, MedicalInfo updatedInfo)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update
+                .Set(info => info.HealthInfo, updatedInfo.HealthInfo)
+                .Set(info => info.Height, updatedInfo.Height)
+                .Set(info => info.Weight, updatedInfo.Weight)
+                .Set(info => info.Hospitals, updatedInfo.Hospitals)
+                .Set(info => info.MedicalDocuments, updatedInfo.MedicalDocuments);
+
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+
     }
 }

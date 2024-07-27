@@ -33,6 +33,19 @@ builder.Services.AddSingleton<UserService>();
 // Add MedicalInfo service
 builder.Services.AddSingleton<MedicalInfoService>();
 
+//Add EmergencyContactas service
+builder.Services.AddSingleton<EmergencyContactsService>();
+
+//Add Rental service
+builder.Services.AddSingleton<RentalService>();
+
+//Add UpdateRental service
+builder.Services.AddHostedService<RentalStatusUpdateService>();
+
+//Add Payments service
+builder.Services.AddSingleton<PaymentService>();
+
+
 // Add SignalR
 builder.Services.AddSignalR();
 

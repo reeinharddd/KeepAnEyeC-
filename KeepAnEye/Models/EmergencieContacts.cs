@@ -7,10 +7,11 @@ namespace KeepAnEye.Models
     public class EmergencieContacts
     {
         [BsonId]
-        public ObjectId Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
 
         [BsonElement("patient_id")]
-        public ObjectId PatientId { get; set; }
+        public string PatientId { get; set; }
 
         [BsonElement("emergency_contacts")]
         public List<EmergencyContact> EmergencyContacts { get; set; } = new List<EmergencyContact>();
@@ -32,6 +33,9 @@ namespace KeepAnEye.Models
 
         [BsonElement("status")]
         public string Status { get; set; } = "default_status_value";
+
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
     }
 
     public class EmergencyContact
@@ -47,5 +51,8 @@ namespace KeepAnEye.Models
 
         [BsonElement("notifications")]
         public List<Notification> Notifications { get; set; } = new List<Notification>();
+
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
     }
 }

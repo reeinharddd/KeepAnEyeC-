@@ -3,6 +3,7 @@ using KeepAnEye.Models;
 using KeepAnEye.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace KeepAnEye.Controllers
 {
@@ -39,6 +40,26 @@ namespace KeepAnEye.Controllers
                 return NotFound(new { message = "Medical info not found for the user" });
             }
             return Ok(documents);
+        }
+
+        [HttpPost("medicalInfo")]
+        public async Task<IActionResult> CreateMedicalInfo([FromBody] MedicalInfo medicalInfo)
+        {
+            await _medicalInfoService.CreateMedicalInfoAsync(medicalInfo);
+            return CreatedAtAction(nameof(GetMedicalInfoByPatientId), new { patientId = medicalInfo.PatientId.ToString() }, medicalInfo);
+        }
+
+        [HttpPut("{patientId}")]
+        public async Task<IActionResult> UpdateMedicalInfo(string patientId, [FromBody] MedicalInfo updatedInfo)
+        {
+         
+            var result = await _medicalInfoService.UpdateMedicalInfoAsync(patientId, updatedInfo);
+            if (result.MatchedCount == 0)
+            {
+                return NotFound(new { message = "Medical info not found" });
+            }
+
+            return Ok(new { message = "Medical info updated successfully" });
         }
     }
 }

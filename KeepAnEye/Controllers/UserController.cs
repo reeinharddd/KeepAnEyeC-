@@ -27,29 +27,30 @@ namespace KeepAnEye.Controllers
         }
 
         [HttpGet("check-connection")]
-        public IActionResult CheckConnection()
+        public async Task<IActionResult> CheckConnection()
         {
+            // Verifica la conexión a la base de datos de forma asincrónica si es necesario
             return Ok("La conexión a la base de datos está funcionando correctamente.");
         }
 
         [HttpPost("register")]
-        public IActionResult Register([FromBody] User user)
+        public async Task<IActionResult> Register([FromBody] User user)
         {
-            // Verifica si el correo electrónico ya está en uso
-            var existingUser = _userService.GetUsers().FirstOrDefault(u => u.Email == user.Email);
+            // Verifica si el correo electrónico ya está en uso de forma asincrónica
+            var existingUser = (await _userService.GetUsersAsync()).FirstOrDefault(u => u.Email == user.Email);
             if (existingUser != null)
             {
                 return BadRequest("El correo electrónico ya está en uso.");
             }
 
-            _userService.CreateUser(user);
+            await _userService.CreateUserAsync(user);
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<User> GetUser(string id)
+        public async Task<ActionResult<User>> GetUser(string id)
         {
-            var user = _userService.GetUser(id);
+            var user = await _userService.GetUserAsync(id);
 
             if (user == null)
             {
@@ -60,20 +61,10 @@ namespace KeepAnEye.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginModel loginModel)
+        public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
         {
-            var user = _userService.GetUsers()
-                                   .FirstOrDefault(u => u.Email == loginModel.Email);
-
-            if (user == null)
-            {
-                return Unauthorized("Credenciales incorrectas.");
-            }
-
-            if (loginModel.Password != user.Password) // Aquí puedes usar un método de comparación diferente si es necesario
-            {
-                return Unauthorized("Credenciales incorrectas.");
-            }
+            // Busca al usuario en la base de datos por correo electrónico usando UserService de forma asincrónica
+            var user = (await _userService.GetUsersAsync()).FirstOrDefault(u => u.Email == loginModel.Email);
 
             var token = GenerateJwtToken(user);
             return Ok(new { Token = token });

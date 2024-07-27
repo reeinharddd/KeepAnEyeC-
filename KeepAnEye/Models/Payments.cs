@@ -29,6 +29,6 @@ namespace KeepAnEye.Models
         public string Status { get; set; } = string.Empty;
 
         [BsonElement("date")]
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } = DateTime.UtcNow;
     }
 }

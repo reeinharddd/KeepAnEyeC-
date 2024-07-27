@@ -48,7 +48,7 @@ namespace KeepAnEye.Models
 
         [BsonElement("subscription")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId? Subscription { get; set; }
+        public string? Subscription { get; set; }
 
 
         [BsonElement("patients")]
@@ -68,7 +68,7 @@ namespace KeepAnEye.Models
     {
         [BsonElement("patient_id")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId? PatientId { get; set; }
+        public string? PatientId { get; set; }
 
         [BsonElement("relationship")]
        public string?Relationship { get; set; } = null;
