@@ -13,52 +13,49 @@ namespace KeepAnEye.Services
 
         public UserService(IOptions<MongoDbSettings> mongoDbSettings)
         {
-            var settings = mongoDbSettings.Value;
-            var client = new MongoClient(settings.ConnectionString);
-            var database = client.GetDatabase(settings.DatabaseName);
-            _usersCollection = database.GetCollection<User>("users");
+            var mongoClient = new MongoClient(mongoDbSettings.Value.ConnectionString);
+            var mongoDatabase = mongoClient.GetDatabase(mongoDbSettings.Value.DatabaseName);
+            _usersCollection = mongoDatabase.GetCollection<User>("users");
         }
 
-        public void CreateUser(User user)
+        public async Task CreateUserAsync(User user)
         {
-            _usersCollection.InsertOne(user);
+            await _usersCollection.InsertOneAsync(user);
         }
 
-        public List<User> GetUsers()
+        public async Task<List<User>> GetUsersAsync()
         {
-            return _usersCollection.Find(user => true).ToList();
+            return await _usersCollection.Find(user => true).ToListAsync();
         }
 
-        public User GetUser(string id)
+        public async Task<User> GetUserAsync(string id)
         {
             if (!ObjectId.TryParse(id, out var objectId))
             {
                 return null;
             }
 
-            return _usersCollection.Find(user => user.Id == objectId.ToString()).FirstOrDefault();
+            return await _usersCollection.Find(user => user.Id == objectId.ToString()).FirstOrDefaultAsync();
         }
 
-
-
-        public void UpdateUser(string id, User userIn)
+        public async Task UpdateUserAsync(string id, User userIn)
         {
             if (!ObjectId.TryParse(id, out var objectId))
             {
                 throw new ArgumentException("Invalid ID format", nameof(id));
             }
 
-            _usersCollection.ReplaceOne(user => user.Id == objectId.ToString(), userIn);
+            await _usersCollection.ReplaceOneAsync(user => user.Id == objectId.ToString(), userIn);
         }
 
-        public void DeleteUser(string id)
+        public async Task DeleteUserAsync(string id)
         {
             if (!ObjectId.TryParse(id, out var objectId))
             {
                 throw new ArgumentException("Invalid ID format", nameof(id));
             }
 
-            _usersCollection.DeleteOne(user => user.Id == objectId.ToString());
+            await _usersCollection.DeleteOneAsync(user => user.Id == objectId.ToString());
         }
     }
 }

@@ -2,13 +2,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using KeepAnEye.Services;
-using Microsoft.OpenApi.Models; // Asegúrate de tener esta referencia
+using KeepAnEye.Hubs;
+using Microsoft.OpenApi.Models;
+using KeepAnEye.Models; // Asegúrate de tener esta referencia
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddScoped<UserService>(); // Registrar UserService aquí
+builder.Services.AddScoped<MetricsService>();
+builder.Services.AddScoped<MedicalInfoService>();
+builder.Services.AddScoped<EmergencyContactsService>();
 builder.Services.AddScoped<MongoDbService>();
 
 // Define CORS policy
@@ -28,6 +33,9 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 
 // Add MongoDB service
 builder.Services.AddSingleton<MongoDbService>();
+
+// Add SignalR
+builder.Services.AddSignalR();
 
 // Add JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -94,5 +102,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Map SignalR hubs
+app.MapHub<MetricsHub>("/metricsHub");
 
 app.Run();
