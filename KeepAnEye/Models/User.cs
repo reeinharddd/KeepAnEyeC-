@@ -52,7 +52,7 @@ namespace KeepAnEye.Models
 
 
         [BsonElement("patients")]
-        public List<Patients> Patients { get; set; } = new List<Patients>();
+        public List<Patient> Patients { get; set; } = new List<Patient>();
     }
 
     public class Name
@@ -64,13 +64,18 @@ namespace KeepAnEye.Models
         public string LastName { get; set; } = string.Empty;
     }
 
-    public class Patients
+    public class Patient
     {
         [BsonElement("patient_id")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? PatientId { get; set; }
+        public string PatientId { get; set; }
 
         [BsonElement("relationship")]
-       public string?Relationship { get; set; } = null;
+        public string Relationship { get; set; } = null;
+
+        [BsonElement("_id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }  // Este campo será ignorado durante la deserialización
     }
+
 }

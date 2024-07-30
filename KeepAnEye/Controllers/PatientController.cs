@@ -17,7 +17,6 @@ namespace KeepAnEye.Controllers
             _userService = userService;
         }
 
-        // POST api/patient
         [HttpPost]
         public async Task<IActionResult> CreatePatient([FromBody] User patient)
         {
@@ -27,16 +26,21 @@ namespace KeepAnEye.Controllers
                 return BadRequest("First Name, Last Name, Email, and Password are required.");
             }
 
-            patient.UserType = "patient"; // Aseguramos que el tipo de usuario sea 'patient'
-            patient.Subscription = null;  // No asignamos ningún valor a Subscription
-            patient.Patients = null;      // No asignamos ningún valor a Patients
+            patient.UserType = "patient";
+            patient.Subscription = null;
+            patient.Patients = null;
+
+            var existingPatient = (await _userService.GetUsersAsync()).FirstOrDefault(u => u.Email == patient.Email);
+            if (existingPatient != null)
+            {
+                return BadRequest("Email is already in use.");
+            }
 
             await _userService.CreateUserAsync(patient);
 
             return CreatedAtAction(nameof(GetPatient), new { id = patient.Id }, new { id = patient.Id });
         }
 
-        // GET api/patient/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetPatient(string id)
         {
@@ -50,6 +54,7 @@ namespace KeepAnEye.Controllers
             {
                 return NotFound();
             }
+
             return Ok(patient);
         }
     }

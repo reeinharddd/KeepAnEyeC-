@@ -1,9 +1,9 @@
-// Services/UserService.cs
 using MongoDB.Driver;
 using KeepAnEye.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KeepAnEye.Services
 {
@@ -57,5 +57,18 @@ namespace KeepAnEye.Services
 
             await _usersCollection.DeleteOneAsync(user => user.Id == objectId.ToString());
         }
+        public async Task AddPatientToUserAsync(string userId, string patientId, string relationship)
+        {
+            if (!ObjectId.TryParse(userId, out var userObjectId) || !ObjectId.TryParse(patientId, out var patientObjectId))
+            {
+                throw new ArgumentException("Invalid ID format");
+            }
+
+            var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+            var update = Builders<User>.Update.Push(u => u.Patients, new Patient { PatientId = patientId, Relationship = relationship });
+
+            await _usersCollection.UpdateOneAsync(filter, update);
+        }
+
     }
 }

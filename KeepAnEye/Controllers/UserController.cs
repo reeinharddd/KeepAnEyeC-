@@ -69,24 +69,24 @@ namespace KeepAnEye.Controllers
             var token = GenerateJwtToken(user);
             return Ok(new { Token = token });
         }
-         [HttpGet("profile")]
-[Authorize]
-public async Task<IActionResult> GetProfile()
-{
-    var userId = User.FindFirst("id")?.Value;
-    if (userId == null)
-    {
-        return Unauthorized();
-    }
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirst("id")?.Value;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
 
-    var user = await _userService.GetUserAsync(userId); // Esperar asincrónicamente
-    if (user == null)
-    {
-        return NotFound();
-    }
+            var user = await _userService.GetUserAsync(userId); // Esperar asincrónicamente
+            if (user == null)
+            {
+                return NotFound();
+            }
 
-    return Ok(user);
-}
+            return Ok(user);
+        }
 
 
         private string GenerateJwtToken(User user)
@@ -117,6 +117,36 @@ public async Task<IActionResult> GetProfile()
         {
             public required string Email { get; set; }
             public required string Password { get; set; }
+        }
+        [HttpPost("{userId}/patients")]
+        public async Task<IActionResult> AddPatientToUser(string userId, [FromBody] AddPatientModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userService.GetUserAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var patient = await _userService.GetUserAsync(model.PatientId);
+            if (patient == null || patient.UserType != "patient")
+            {
+                return NotFound("Patient not found or not a valid patient.");
+            }
+
+            await _userService.AddPatientToUserAsync(userId, model.PatientId, model.Relationship);
+
+            return NoContent();
+        }
+
+        public class AddPatientModel
+        {
+            public required string PatientId { get; set; }
+            public required string Relationship { get; set; }
         }
     }
 }

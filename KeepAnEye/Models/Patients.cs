@@ -4,7 +4,7 @@ using MongoDB.Bson;
 
 namespace KeepAnEye.Models
 {
-    public class Patient
+    public class Patients
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
