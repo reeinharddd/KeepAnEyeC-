@@ -69,6 +69,25 @@ namespace KeepAnEye.Controllers
             var token = GenerateJwtToken(user);
             return Ok(new { Token = token });
         }
+         [HttpGet("profile")]
+[Authorize]
+public async Task<IActionResult> GetProfile()
+{
+    var userId = User.FindFirst("id")?.Value;
+    if (userId == null)
+    {
+        return Unauthorized();
+    }
+
+    var user = await _userService.GetUserAsync(userId); // Esperar asincrónicamente
+    if (user == null)
+    {
+        return NotFound();
+    }
+
+    return Ok(user);
+}
+
 
         private string GenerateJwtToken(User user)
         {

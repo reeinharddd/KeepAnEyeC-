@@ -8,6 +8,8 @@ namespace KeepAnEye.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
+
         [BsonElement("name")]
         public Name Name { get; set; } = new Name();
 
