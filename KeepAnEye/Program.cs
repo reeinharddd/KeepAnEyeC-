@@ -45,6 +45,8 @@ builder.Services.AddHostedService<RentalStatusUpdateService>();
 //Add Payments service
 builder.Services.AddSingleton<PaymentService>();
 
+builder.Services.AddSingleton<AppointmentService>();
+builder.Services.AddSingleton<ReminderService>();
 
 // Add SignalR
 builder.Services.AddSignalR();

@@ -75,7 +75,7 @@ namespace KeepAnEye.Models
 
         [BsonElement("_id")]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }  // Este campo será ignorado durante la deserialización
+        public string Id { get; set; }
     }
 
 }
