@@ -51,6 +51,10 @@ namespace KeepAnEye.Models
 
     public class Medicine
     {
+        [BsonElement("_id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
+
         [BsonElement("name")]
         public string Name { get; set; }
 
@@ -78,6 +82,9 @@ namespace KeepAnEye.Models
 
     public class MedicalCondition
     {
+        [BsonElement("_id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
         [BsonElement("name")]
         public string Name { get; set; }
 
