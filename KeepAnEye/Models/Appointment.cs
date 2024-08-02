@@ -1,6 +1,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
+using System.Collections.Generic;
 
 namespace KeepAnEye.Models
 {
@@ -13,6 +14,12 @@ namespace KeepAnEye.Models
         [BsonElement("patient_id")]
         public string PatientId { get; set; }
 
+        [BsonElement("appointments")]
+        public List<AppointmentDetail> Appointments { get; set; }
+    }
+
+    public class AppointmentDetail
+    {
         [BsonElement("date")]
         public DateTime Date { get; set; }
 
@@ -21,5 +28,9 @@ namespace KeepAnEye.Models
 
         [BsonElement("place")]
         public string Place { get; set; }
+        
+        [BsonElement("status")]
+                public string Status { get; set; }
+
     }
 }
