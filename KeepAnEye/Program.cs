@@ -4,9 +4,14 @@ using System.Text;
 using KeepAnEye.Services;
 using KeepAnEye.Hubs;
 using Microsoft.OpenApi.Models;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
-
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("keepaneye5b-firebase-adminsdk-zdvd4-4e0aee6c72.json"),
+});
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
@@ -47,6 +52,8 @@ builder.Services.AddSingleton<PaymentService>();
 
 builder.Services.AddSingleton<AppointmentService>();
 builder.Services.AddSingleton<ReminderService>();
+builder.Services.AddSingleton<FirebaseService>();
+
 
 // Add SignalR
 builder.Services.AddSignalR();
@@ -95,6 +102,7 @@ builder.Services.AddSwaggerGen(c =>
     };
     c.AddSecurityRequirement(securityRequirement);
 });
+
 
 var app = builder.Build();
 
