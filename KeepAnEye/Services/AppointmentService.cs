@@ -21,13 +21,13 @@ namespace KeepAnEye.Services
 
         public async Task<List<Appointment>> GetAppointmentsByPatientIdAsync(string patientId)
         {
-            var filter = Builders<Appointment>.Filter.Eq("PatientId", new ObjectId(patientId));
+            var filter = Builders<Appointment>.Filter.Eq("PatientId", patientId); // No se convierte a ObjectId
             return await _appointments.Find(filter).ToListAsync();
         }
 
         public async Task<Appointment> GetAppointmentByIdAsync(string id)
         {
-            var filter = Builders<Appointment>.Filter.Eq("Id", new ObjectId(id));
+            var filter = Builders<Appointment>.Filter.Eq("Id", id); // No se convierte a ObjectId
             return await _appointments.Find(filter).FirstOrDefaultAsync();
         }
 
@@ -38,13 +38,13 @@ namespace KeepAnEye.Services
 
         public async Task UpdateAppointmentAsync(string id, Appointment appointmentIn)
         {
-            var filter = Builders<Appointment>.Filter.Eq("Id", new ObjectId(id));
+            var filter = Builders<Appointment>.Filter.Eq("Id", id); // No se convierte a ObjectId
             await _appointments.ReplaceOneAsync(filter, appointmentIn);
         }
 
         public async Task DeleteAppointmentAsync(string id)
         {
-            var filter = Builders<Appointment>.Filter.Eq("Id", new ObjectId(id));
+            var filter = Builders<Appointment>.Filter.Eq("Id", id); // No se convierte a ObjectId
             await _appointments.DeleteOneAsync(filter);
         }
     }

@@ -1,9 +1,12 @@
-// Controllers/MedicalInfoController.cs
 using KeepAnEye.Models;
 using KeepAnEye.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KeepAnEye.Controllers
 {
@@ -43,16 +46,61 @@ namespace KeepAnEye.Controllers
         }
 
         [HttpPost("medicalInfo")]
-        public async Task<IActionResult> CreateMedicalInfo([FromBody] MedicalInfo medicalInfo)
+        public async Task<IActionResult> CreateMedicalInfo([FromForm] IFormFileCollection files, [FromForm] MedicalInfo medicalInfo)
         {
+            if (files != null && files.Count > 0)
+            {
+                var documents = new List<MedicalDocument>();
+
+                foreach (var file in files)
+                {
+                    using (var fileStream = file.OpenReadStream())
+                    {
+                        var document = new MedicalDocument
+                        {
+                            Name = file.FileName,
+                            Type = file.ContentType,
+                            Date = DateTime.UtcNow,
+                            Url = await _medicalInfoService.UploadFileToFirebaseAsync(fileStream, file.FileName)
+                        };
+
+                        documents.Add(document);
+                    }
+                }
+
+                medicalInfo.MedicalDocuments = documents;
+            }
+
             await _medicalInfoService.CreateMedicalInfoAsync(medicalInfo);
-            return CreatedAtAction(nameof(GetMedicalInfoByPatientId), new { patientId = medicalInfo.PatientId.ToString() }, medicalInfo);
+            return CreatedAtAction(nameof(GetMedicalInfoByPatientId), new { patientId = medicalInfo.PatientId }, medicalInfo);
         }
 
         [HttpPut("{patientId}")]
-        public async Task<IActionResult> UpdateMedicalInfo(string patientId, [FromBody] MedicalInfo updatedInfo)
+        public async Task<IActionResult> UpdateMedicalInfo(string patientId, [FromForm] IFormFileCollection files, [FromForm] MedicalInfo updatedInfo)
         {
-         
+            if (files != null && files.Count > 0)
+            {
+                var documents = new List<MedicalDocument>();
+
+                foreach (var file in files)
+                {
+                    using (var fileStream = file.OpenReadStream())
+                    {
+                        var document = new MedicalDocument
+                        {
+                            Name = file.FileName,
+                            Type = file.ContentType,
+                            Date = DateTime.UtcNow,
+                            Url = await _medicalInfoService.UploadFileToFirebaseAsync(fileStream, file.FileName)
+                        };
+
+                        documents.Add(document);
+                    }
+                }
+
+                updatedInfo.MedicalDocuments = documents;
+            }
+
             var result = await _medicalInfoService.UpdateMedicalInfoAsync(patientId, updatedInfo);
             if (result.MatchedCount == 0)
             {
@@ -61,5 +109,6 @@ namespace KeepAnEye.Controllers
 
             return Ok(new { message = "Medical info updated successfully" });
         }
+
     }
 }
