@@ -20,7 +20,27 @@ namespace KeepAnEye.Services
 
         public async Task CreateUserAsync(User user)
         {
+            user.Id = ObjectId.GenerateNewId().ToString(); // Generar nuevo ID si no está presente
+
+            // Imprimir en consola los datos del usuario antes de insertarlo
+            Console.WriteLine("Creando usuario: " + Newtonsoft.Json.JsonConvert.SerializeObject(user));
+
             await _usersCollection.InsertOneAsync(user);
+
+            // Imprimir en consola una confirmación de la inserción
+            Console.WriteLine("Usuario creado con ID: " + user.Id);
+        }
+
+
+        public async Task UpdateUserAsync(string id, User userIn)
+        {
+            if (!ObjectId.TryParse(id, out var objectId))
+            {
+                throw new ArgumentException("Invalid ID format", nameof(id));
+            }
+
+            userIn.Id = id; // Asegurarse de que el ID en el objeto `userIn` sea correcto
+            await _usersCollection.ReplaceOneAsync(user => user.Id == id, userIn);
         }
 
         public async Task<List<User>> GetUsersAsync()
@@ -38,15 +58,6 @@ namespace KeepAnEye.Services
             return await _usersCollection.Find(user => user.Id == objectId.ToString()).FirstOrDefaultAsync();
         }
 
-        public async Task UpdateUserAsync(string id, User userIn)
-        {
-            if (!ObjectId.TryParse(id, out var objectId))
-            {
-                throw new ArgumentException("Invalid ID format", nameof(id));
-            }
-
-            await _usersCollection.ReplaceOneAsync(user => user.Id == objectId.ToString(), userIn);
-        }
 
         public async Task DeleteUserAsync(string id)
         {

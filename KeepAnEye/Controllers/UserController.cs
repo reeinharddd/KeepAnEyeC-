@@ -8,6 +8,7 @@ using BCrypt.Net;
 using KeepAnEye.Models;
 using KeepAnEye.Services;
 using Microsoft.AspNetCore.Authorization;
+using MongoDB.Bson;
 
 namespace KeepAnEye.Controllers
 {
@@ -36,16 +37,39 @@ namespace KeepAnEye.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
-            // Verifica si el correo electrónico ya está en uso de forma asincrónica
+            if (user == null)
+            {
+                return BadRequest("User data is null");
+            }
+
+            // Comprobar si el correo electrónico ya está en uso
             var existingUser = (await _userService.GetUsersAsync()).FirstOrDefault(u => u.Email == user.Email);
             if (existingUser != null)
             {
-                return BadRequest("El correo electrónico ya está en uso.");
+                return BadRequest(new { message = "El correo electrónico ya está en uso." });
             }
+            Console.WriteLine("Datos del usuario: " + Newtonsoft.Json.JsonConvert.SerializeObject(user));
+            try
+            {
+                // Generar nuevo ID para el usuario
+                user.Id = ObjectId.GenerateNewId().ToString();
+                user.CreatedAt = DateTime.UtcNow;
 
-            await _userService.CreateUserAsync(user);
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+                // Crear usuario en la base de datos
+                await _userService.CreateUserAsync(user);
+
+                // Devolver respuesta con la información del nuevo usuario
+                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            }
+            catch (Exception ex)
+            {
+                // Loguear el error para su análisis
+                Console.WriteLine($"Error al registrar usuario: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
         }
+
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(string id)
@@ -148,5 +172,55 @@ namespace KeepAnEye.Controllers
             public required string PatientId { get; set; }
             public required string Relationship { get; set; }
         }
+        // [HttpPost("upload-photo")]
+        // public async Task<IActionResult> UploadPhoto(IFormFile profilePhoto)
+        // {
+        //     if (profilePhoto == null || profilePhoto.Length == 0)
+        //     {
+        //         return BadRequest(new { message = "No file uploaded" });
+        //     }
+
+        //     try
+        //     {
+        //         using (var stream = profilePhoto.OpenReadStream())
+        //         {
+        //             var fileUrl = await _googleDriveService.UploadFileAsync(stream, profilePhoto.FileName);
+        //             return Ok(new { url = fileUrl });
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         // Agrega un registro detallado del error
+        //         Console.WriteLine($"Error al subir la foto: {ex.Message}");
+        //         return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error al subir la foto", details = ex.Message });
+        //     }
+        // }
+
+
+
+        // private async Task<string> SavePhotoLocally(IFormFile file)
+        // {
+        //     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+        //     if (!Directory.Exists(uploadsFolder))
+        //     {
+        //         Directory.CreateDirectory(uploadsFolder);
+        //     }
+
+        //     var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+        //     var fileExtension = Path.GetExtension(file.FileName);
+        //     var uniqueFileName = $"{fileName}_{Guid.NewGuid()}{fileExtension}";
+        //     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+        //     using (var fileStream = new FileStream(filePath, FileMode.Create))
+        //     {
+        //         await file.CopyToAsync(fileStream);
+        //     }
+
+        //     var url = $"/uploads/{uniqueFileName}";
+        //     return url;
+        // }
+
+
+
     }
 }

@@ -11,13 +11,13 @@ namespace KeepAnEye.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [BsonElement("name")]
         public Name Name { get; set; } = new Name();
 
         [BsonElement("sex")]
-        public string Sex { get; set; } = null;
+        public string? Sex { get; set; }
 
         [BsonElement("user_photo")]
         public string? UserPhoto { get; set; }
@@ -35,7 +35,7 @@ namespace KeepAnEye.Models
         public string Password { get; set; } = string.Empty;
 
         [BsonElement("phone")]
-        public string Phone { get; set; } = null;
+        public string? Phone { get; set; }
 
         [BsonElement("address")]
         public Address Address { get; set; } = new Address();
@@ -44,7 +44,7 @@ namespace KeepAnEye.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [BsonElement("status")]
-        public string Status { get; set; } = null;
+        public string? Status { get; set; }
 
         [BsonElement("subscription")]
         [BsonRepresentation(BsonType.ObjectId)]
