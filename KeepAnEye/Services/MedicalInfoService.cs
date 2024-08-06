@@ -139,6 +139,51 @@ namespace KeepAnEye.Services
             return await _medicalInfos.UpdateOneAsync(filter, updateDefinition);
         }
 
+        public async Task<UpdateResult> RemoveAllergyAsync(string patientId, int index)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update.PullFilter(info => info.HealthInfo.Allergies, Builders<Allergy>.Filter.Eq("Index", index));
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+
+        public async Task<UpdateResult> RemoveMedicalConditionAsync(string patientId, int index)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update.PullFilter(info => info.HealthInfo.MedicalConditions, Builders<MedicalCondition>.Filter.Eq("Index", index));
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+
+        public async Task<UpdateResult> RemoveHospitalAsync(string patientId, int index)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update.PullFilter(
+                info => info.Hospitals,
+                Builders<Hospital>.Filter.Eq("Id", index.ToString()) // Ajusta esto si tu lógica de índice es diferente
+            );
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+
+        public async Task<UpdateResult> RemoveMedicalDocumentAsync(string patientId, int index)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update.PullFilter(info => info.MedicalDocuments, Builders<MedicalDocument>.Filter.Eq("Index", index));
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+        public async Task<UpdateResult> RemoveMedicineAsync(string patientId, string medicineId)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update.PullFilter(info => info.HealthInfo.Medicines, Builders<Medicine>.Filter.Eq(m => m.Id, medicineId));
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+
+        public async Task<UpdateResult> RemoveMedicineByIndexAsync(string patientId, int index)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+
+            // Assuming positions are relevant and are maintained as indices
+            var update = Builders<MedicalInfo>.Update.PullFilter(info => info.HealthInfo.Medicines, Builders<Medicine>.Filter.Eq("Index", index));
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
 
     }
 }

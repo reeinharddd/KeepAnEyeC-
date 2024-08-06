@@ -142,6 +142,78 @@ namespace KeepAnEye.Controllers
             }
             return NoContent();
         }
+        [HttpDelete("{patientId}/allergies/{index}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAllergy(string patientId, int index)
+        {
+            var medicalInfo = await _medicalInfoService.GetMedicalInfoByPatientIdAsync(patientId);
+            if (medicalInfo == null || medicalInfo.HealthInfo == null || medicalInfo.HealthInfo.Allergies == null || index < 0 || index >= medicalInfo.HealthInfo.Allergies.Count)
+            {
+                return NotFound();
+            }
+
+            medicalInfo.HealthInfo.Allergies.RemoveAt(index);
+            var result = await _medicalInfoService.UpdateMedicalInfoAsync(patientId, medicalInfo);
+
+            if (result.ModifiedCount == 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error updating the database");
+            }
+
+            return NoContent();
+        }
+        [HttpDelete("{patientId}/medicines/{medicineId}")]
+        public async Task<IActionResult> DeleteMedicine(string patientId, string medicineId)
+        {
+            var result = await _medicalInfoService.RemoveMedicineAsync(patientId, medicineId);
+            if (result.ModifiedCount > 0)
+            {
+                return NoContent();
+            }
+            return NotFound();
+        }
+
+
+
+
+
+        [HttpDelete("{patientId}/conditions/{index}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteCondition(string patientId, int index)
+        {
+            var result = await _medicalInfoService.RemoveMedicalConditionAsync(patientId, index);
+            if (result.ModifiedCount == 0)
+            {
+                return NotFound(new { message = "Medical condition not found or index is invalid" });
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("{patientId}/hospitals/{index}")]
+        public async Task<IActionResult> DeleteHospital(string patientId, int index)
+        {
+            var result = await _medicalInfoService.RemoveHospitalAsync(patientId, index);
+            if (result.ModifiedCount == 0)
+            {
+                return NotFound(new { message = "Hospital not found" });
+            }
+            return NoContent(); // 204 No Content
+        }
+
+
+
+        [HttpDelete("{patientId}/documents/{index}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteMedicalDocument(string patientId, int index)
+        {
+            var result = await _medicalInfoService.RemoveMedicalDocumentAsync(patientId, index);
+            if (result.ModifiedCount == 0)
+            {
+                return NotFound(new { message = "Medical document not found or index is invalid" });
+            }
+            return NoContent();
+        }
+
 
 
     }
