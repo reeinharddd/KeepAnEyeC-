@@ -115,7 +115,6 @@ app.UseRouting();
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseStaticFiles(); // Permite servir archivos estáticos desde wwwroot
 
 app.MapControllers();
 app.MapHub<MetricsHub>("/metricsHub");

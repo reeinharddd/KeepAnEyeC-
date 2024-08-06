@@ -1,8 +1,10 @@
-// Services/MedicalInfoService.cs
 using KeepAnEye.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace KeepAnEye.Services
 {
@@ -20,11 +22,8 @@ namespace KeepAnEye.Services
 
         public async Task<MedicalInfo?> GetMedicalInfoByPatientIdAsync(string patientId)
         {
-
-
             return await _medicalInfos.Find(medicalInfo => medicalInfo.PatientId == patientId).FirstOrDefaultAsync();
         }
-
 
         public async Task<List<MedicalDocument>> GetDocumentsAsync(string userId)
         {
@@ -41,7 +40,27 @@ namespace KeepAnEye.Services
             return new List<MedicalDocument>();
         }
 
-        // Método para crear nueva información médica
+        public async Task<MedicalInfo> EnsureMedicalInfoExistsAsync(string patientId)
+        {
+            var medicalInfo = await _medicalInfos.Find(info => info.PatientId == patientId).FirstOrDefaultAsync();
+            if (medicalInfo == null)
+            {
+                medicalInfo = new MedicalInfo
+                {
+                    PatientId = patientId,
+                    HealthInfo = new HealthInfo(),
+                    NSS = string.Empty,
+                    BloodType = string.Empty,
+                    Height = string.Empty,
+                    Weight = string.Empty,
+                    Hospitals = new List<Hospital>(),
+                    MedicalDocuments = new List<MedicalDocument>()
+                };
+                await _medicalInfos.InsertOneAsync(medicalInfo);
+            }
+            return medicalInfo;
+        }
+
         public async Task CreateMedicalInfoAsync(MedicalInfo medicalInfo)
         {
             await _medicalInfos.InsertOneAsync(medicalInfo);
@@ -59,6 +78,29 @@ namespace KeepAnEye.Services
 
             return await _medicalInfos.UpdateOneAsync(filter, update);
         }
+        public async Task<UpdateResult> UpdateMedicalInfoFieldAsync(FilterDefinition<MedicalInfo> filter, UpdateDefinition<MedicalInfo> update)
+        {
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+        public async Task<UpdateResult> UpdateMedicinesAsync(string patientId, List<Medicine> newMedicines)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+
+            // Generar nuevos Ids si no se proporcionan
+            foreach (var medicine in newMedicines)
+            {
+                if (string.IsNullOrEmpty(medicine.Id))
+                {
+                    medicine.Id = ObjectId.GenerateNewId().ToString(); // Genera un nuevo Id para el medicamento
+                }
+            }
+
+            var update = Builders<MedicalInfo>.Update.PushEach(info => info.HealthInfo.Medicines, newMedicines);
+
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+
+
 
     }
 }

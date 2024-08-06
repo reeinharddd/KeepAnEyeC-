@@ -55,14 +55,40 @@ namespace KeepAnEye.Controllers
         [HttpPut("{patientId}")]
         public async Task<IActionResult> UpdateMedicalInfo(string patientId, [FromBody] MedicalInfo updatedInfo)
         {
-
             var result = await _medicalInfoService.UpdateMedicalInfoAsync(patientId, updatedInfo);
             if (result.MatchedCount == 0)
+            {
+                return NotFound("MedicalInfo not found");
+            }
+            return NoContent();
+        }
+        [HttpPost("{patientId}")]
+        public async Task<IActionResult> EnsureMedicalInfoExists(string patientId)
+        {
+            var medicalInfo = await _medicalInfoService.EnsureMedicalInfoExistsAsync(patientId);
+            return Ok(medicalInfo);
+        }
+        [HttpPost("{patientId}/medicines")]
+        [Authorize]
+        public async Task<IActionResult> UpdateMedicines(string patientId, MedicinesUpdateRequest request)
+        {
+            var medicalInfo = await _medicalInfoService.GetMedicalInfoByPatientIdAsync(patientId);
+            if (medicalInfo == null)
             {
                 return NotFound(new { message = "Medical info not found" });
             }
 
-            return Ok(new { message = "Medical info updated successfully" });
+            var result = await _medicalInfoService.UpdateMedicinesAsync(patientId, request.NewMedicines);
+            if (result.ModifiedCount > 0)
+            {
+                return Ok(new { message = "Medicines updated successfully" });
+            }
+
+            return BadRequest(new { message = "No changes were made" });
         }
+
+
+
+
     }
 }
