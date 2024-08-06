@@ -126,6 +126,18 @@ namespace KeepAnEye.Services
             return await _medicalInfos.UpdateOneAsync(filter, update);
         }
 
+        public async Task<UpdateResult> UpdateMedicalInfoFieldsAsync(string patientId, string? nss, string? bloodType, string? height, string? weight)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+
+            var updateDefinition = Builders<MedicalInfo>.Update
+                .Set(info => info.NSS, nss)
+                .Set(info => info.BloodType, bloodType)
+                .Set(info => info.Height, height)
+                .Set(info => info.Weight, weight);
+
+            return await _medicalInfos.UpdateOneAsync(filter, updateDefinition);
+        }
 
 
     }

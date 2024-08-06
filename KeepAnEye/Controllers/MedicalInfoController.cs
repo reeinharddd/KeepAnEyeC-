@@ -132,6 +132,16 @@ namespace KeepAnEye.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{patientId}/update-fields")]
+        public async Task<IActionResult> UpdateMedicalInfoFields(string patientId, [FromBody] MedicalInfoUpdateRequest updateRequest)
+        {
+            var result = await _medicalInfoService.UpdateMedicalInfoFieldsAsync(patientId, updateRequest.NSS, updateRequest.BloodType, updateRequest.Height, updateRequest.Weight);
+            if (result.MatchedCount == 0)
+            {
+                return NotFound(new { message = "Medical info not found" });
+            }
+            return NoContent();
+        }
 
 
     }
