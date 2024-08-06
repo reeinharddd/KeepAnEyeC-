@@ -99,6 +99,32 @@ namespace KeepAnEye.Services
 
             return await _medicalInfos.UpdateOneAsync(filter, update);
         }
+        public async Task<UpdateResult> UpdateAllergiesAsync(string patientId, List<Allergy> newAllergies)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update.AddToSetEach(info => info.HealthInfo.Allergies, newAllergies);
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+
+
+        public async Task<UpdateResult> UpdateMedicalConditionsAsync(string patientId, List<MedicalCondition> newConditions)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update.AddToSetEach(info => info.HealthInfo.MedicalConditions, newConditions);
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+        public async Task<UpdateResult> UpdateHospitalsAsync(string patientId, List<Hospital> newHospitals)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update.AddToSetEach(info => info.Hospitals, newHospitals);
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
+        public async Task<UpdateResult> UpdateMedicalDocumentsAsync(string patientId, List<MedicalDocument> newDocuments)
+        {
+            var filter = Builders<MedicalInfo>.Filter.Eq(info => info.PatientId, patientId);
+            var update = Builders<MedicalInfo>.Update.AddToSetEach(info => info.MedicalDocuments, newDocuments);
+            return await _medicalInfos.UpdateOneAsync(filter, update);
+        }
 
 
 

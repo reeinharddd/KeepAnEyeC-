@@ -87,6 +87,50 @@ namespace KeepAnEye.Controllers
             return BadRequest(new { message = "No changes were made" });
         }
 
+        [HttpPatch("{patientId}/allergies")]
+        public async Task<IActionResult> UpdateAllergies(string patientId, [FromBody] List<Allergy> allergies)
+        {
+            var result = await _medicalInfoService.UpdateAllergiesAsync(patientId, allergies);
+            if (result.MatchedCount == 0)
+            {
+                return NotFound(new { message = "Medical info not found" });
+            }
+            return NoContent();
+        }
+
+        [HttpPatch("{patientId}/conditions")]
+        public async Task<IActionResult> UpdateMedicalConditions(string patientId, [FromBody] List<MedicalCondition> conditions)
+        {
+            var result = await _medicalInfoService.UpdateMedicalConditionsAsync(patientId, conditions);
+            if (result.MatchedCount == 0)
+            {
+                return NotFound(new { message = "Medical info not found" });
+            }
+            return NoContent();
+        }
+
+
+        [HttpPatch("{patientId}/hospitals")]
+        public async Task<IActionResult> UpdateHospitals(string patientId, [FromBody] List<Hospital> hospitals)
+        {
+            var result = await _medicalInfoService.UpdateHospitalsAsync(patientId, hospitals);
+            if (result.MatchedCount == 0)
+            {
+                return NotFound(new { message = "Medical info not found" });
+            }
+            return NoContent();
+        }
+
+        [HttpPatch("{patientId}/documents")]
+        public async Task<IActionResult> UpdateMedicalDocuments(string patientId, [FromBody] List<MedicalDocument> documents)
+        {
+            var result = await _medicalInfoService.UpdateMedicalDocumentsAsync(patientId, documents);
+            if (result.MatchedCount == 0)
+            {
+                return NotFound(new { message = "Medical info not found" });
+            }
+            return NoContent();
+        }
 
 
 
