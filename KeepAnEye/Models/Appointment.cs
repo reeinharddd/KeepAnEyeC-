@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace KeepAnEye.Models
 {
+    [BsonIgnoreExtraElements]
     public class Appointment
     {
         [BsonId]
@@ -18,6 +19,7 @@ namespace KeepAnEye.Models
         public List<AppointmentDetail> Appointments { get; set; }
     }
 
+    [BsonIgnoreExtraElements]
     public class AppointmentDetail
     {
         [BsonElement("date")]
@@ -28,9 +30,12 @@ namespace KeepAnEye.Models
 
         [BsonElement("place")]
         public string Place { get; set; }
-        
-        [BsonElement("status")]
-                public string Status { get; set; }
 
+        [BsonElement("status")]
+        public string Status { get; set; }
+
+        [BsonElement("_id")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
     }
 }
